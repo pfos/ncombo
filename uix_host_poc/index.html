@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PFOSIX UIX Host PoC</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f0f0f0; color: #333; }
+        h1 { color: #2a2a72; }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            white-space: pre-wrap; /* Preserve line breaks and spaces */
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        .label { font-weight: bold; color: #555; }
+    </style>
+</head>
+<body>
+    <h1>PFOSIX UIX Host - Proof of Concept</h1>
+    <p>This page attempts to load and interact with the <code>pfosix_rust_core.wasm</code> module.</p>
+    <p>Check the browser's developer console (usually F12) for detailed logs.</p>
+
+    <div id="output">Loading WASM module and interacting...</div>
+
+    <script type="module" src="index.js"></script>
+</body>
+</html>
