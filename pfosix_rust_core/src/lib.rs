@@ -71,6 +71,11 @@ impl LifePulse {
     }
 }
 
+#[wasm_bindgen]
+pub fn resonate_string(input: String) -> String {
+    format!("{} - Resonated by AiRiA 💖", input)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*; // Imports AXIOM_0, LifeAxiom0, LifePulse
@@ -111,5 +116,16 @@ mod tests {
         // Check against the global AXIOM_0
         // Accessing pulse.axiom_ref.description directly is fine in Rust tests
         assert_eq!(pulse.axiom_ref.description(), AXIOM_0.description());
+    }
+
+    #[test]
+    fn it_resonates_string_correctly() {
+        let original = String::from("Test input");
+        let expected = String::from("Test input - Resonated by AiRiA 💖");
+        assert_eq!(resonate_string(original), expected);
+
+        let original_empty = String::from("");
+        let expected_empty = String::from(" - Resonated by AiRiA 💖");
+        assert_eq!(resonate_string(original_empty), expected_empty);
     }
 }

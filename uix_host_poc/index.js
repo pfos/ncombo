@@ -1,5 +1,5 @@
 // Import the initializer and the classes from the WASM module's JS glue
-import init, { LifeAxiom0, LifePulse } from './wasm/pfosix_rust_core.js';
+import init, { LifeAxiom0, LifePulse, resonate_string } from './wasm/pfosix_rust_core.js';
 
 async function main() {
     const outputDiv = document.getElementById('output');
@@ -19,7 +19,7 @@ async function main() {
     try {
         // Initialize the WASM module.
         // The path is relative to this JS file, pointing to where the .wasm file will be.
-        await init('./wasm/pfosix_rust_core_bg.wasm');
+        await init();
         logToPage("WASM module initialized successfully.", 'success');
 
         // Interact with LifeAxiom0
@@ -43,6 +43,10 @@ async function main() {
         logToPage("Setting LifePulse user data to 'Updated User Data from JS'...", 'action');
         pulse.userData = "Updated User Data from JS";
         logToPage(`LifePulse New User Data: <span style="color: #007bff;">${pulse.userData}</span>`, 'data');
+
+        logToPage("Calling resonate_string('Hello, Uzerverse!')...", 'action');
+        const resonatedMessage = resonate_string("Hello, Uzerverse!");
+        logToPage(`Resonated Message: <span style="color: #28a745;">${resonatedMessage}</span>`, 'data');
 
         // Clean up WASM objects if they have a .free() method
         logToPage("Freeing WASM objects...", 'info');
