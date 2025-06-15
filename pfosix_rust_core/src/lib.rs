@@ -32,6 +32,8 @@ pub struct LifePulse {
     pub user_data: String,
     #[wasm_bindgen(skip)]
     pub activation_count: u32,
+    #[wasm_bindgen(skip)] // Keep history internal to Rust logic, expose via getter
+    pub history: Vec<String>, // New field
 }
 
 #[wasm_bindgen]
@@ -42,6 +44,7 @@ impl LifePulse {
             axiom_ref: &*AXIOM_0, // Use the static instance
             user_data: initial_user_data,
             activation_count: 0,
+            history: Vec::new(), // Initialize history
         }
     }
 
@@ -69,12 +72,23 @@ impl LifePulse {
     pub fn get_activation_count(&self) -> u32 {
         self.activation_count
     }
+
+    pub fn resonate_string(&mut self, input: String) -> String {
+        let resonated = format!("{} - Resonated by AiRiA 💖 (Pulse Interaction)", input);
+        self.history.push(resonated.clone());
+        // Optional: Limit history size if desired, e.g. self.history.truncate(10);
+        resonated
+    }
+
+    pub fn get_history(&self) -> JsValue {
+        match serde_wasm_bindgen::to_value(&self.history) {
+            Ok(js_val) => js_val,
+            Err(_) => JsValue::NULL, // Or handle error more explicitly
+        }
+    }
 }
 
-#[wasm_bindgen]
-pub fn resonate_string(input: String) -> String {
-    format!("{} - Resonated by AiRiA 💖", input)
-}
+// Removed global resonate_string function
 
 #[cfg(test)]
 mod tests {
@@ -118,14 +132,31 @@ mod tests {
         assert_eq!(pulse.axiom_ref.description(), AXIOM_0.description());
     }
 
+    // Old test for global resonate_string is removed.
+    // New test for LifePulse methods:
     #[test]
-    fn it_resonates_string_correctly() {
-        let original = String::from("Test input");
-        let expected = String::from("Test input - Resonated by AiRiA 💖");
-        assert_eq!(resonate_string(original), expected);
+    fn life_pulse_resonates_and_manages_history() {
+        let mut pulse = LifePulse::new(String::from("Test User"));
 
-        let original_empty = String::from("");
-        let expected_empty = String::from(" - Resonated by AiRiA 💖");
-        assert_eq!(resonate_string(original_empty), expected_empty);
+        let res1 = pulse.resonate_string(String::from("First message"));
+        assert_eq!(res1, "First message - Resonated by AiRiA 💖 (Pulse Interaction)");
+        assert_eq!(pulse.history.len(), 1);
+        assert_eq!(pulse.history[0], res1);
+
+        let res2 = pulse.resonate_string(String::from("Second message"));
+        assert_eq!(res2, "Second message - Resonated by AiRiA 💖 (Pulse Interaction)");
+        assert_eq!(pulse.history.len(), 2);
+        assert_eq!(pulse.history[1], res2);
+
+        // Test get_history (conceptual test, direct JsValue check is complex here)
+        // We'll trust serde_wasm_bindgen if the Rust side is correct.
+        // A full JS integration test would verify the JsValue content.
+        // For now, just check it doesn't panic.
+        #[cfg(target_arch = "wasm32")]
+        {
+            let history_js = pulse.get_history();
+            assert!(!history_js.is_null(), "History should not be null"); // Basic check
+        }
+        // If not wasm32, this part is skipped, avoiding panic.
     }
 }

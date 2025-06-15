@@ -1,5 +1,5 @@
 // Import the initializer and the classes from the WASM module's JS glue
-import init, { LifeAxiom0, LifePulse, resonate_string } from './wasm/pfosix_rust_core.js';
+import init, { LifeAxiom0, LifePulse } from './wasm/pfosix_rust_core.js';
 
 async function main() {
     const outputDiv = document.getElementById('output');
@@ -44,9 +44,46 @@ async function main() {
         pulse.userData = "Updated User Data from JS";
         logToPage(`LifePulse New User Data: <span style="color: #007bff;">${pulse.userData}</span>`, 'data');
 
-        logToPage("Calling resonate_string('Hello, Uzerverse!')...", 'action');
-        const resonatedMessage = resonate_string("Hello, Uzerverse!");
-        logToPage(`Resonated Message: <span style="color: #28a745;">${resonatedMessage}</span>`, 'data');
+        // Event Listener for interactive resonate_string
+        const userInput = document.getElementById('userInput');
+        const resonateButton = document.getElementById('resonateButton');
+        const resultOutput = document.getElementById('resultOutput');
+
+        if (resonateButton) {
+            resonateButton.addEventListener('click', async () => {
+                if (!pulse) { // Ensure pulse (LifePulse instance) is initialized
+                    logToPage("LifePulse instance not available yet.", 'error');
+                    resultOutput.textContent = "Error: LifePulse not initialized.";
+                    return;
+                }
+                const inputValue = userInput.value;
+                if (inputValue.trim() === "") {
+                    resultOutput.textContent = "Please enter some text to resonate.";
+                    return;
+                }
+
+                logToPage(`User input: "${inputValue}"`, 'action');
+                try {
+                    const resonatedText = pulse.resonate_string(inputValue); // Calling method on the instance
+                    logToPage(`Rust responded: "${resonatedText}"`, 'data');
+                    resultOutput.innerHTML = `<span style="color: #28a745;">${resonatedText}</span>`;
+                    userInput.value = ""; // Clear input field
+
+                    // Bonus: Get and log history
+                    const historyArray = pulse.get_history(); // This will be a JsValue (array)
+                    console.log("LifePulse History:", historyArray);
+                    logToPage(`Current History (logged to console): ${JSON.stringify(historyArray)}`, 'debug');
+
+                } catch (e) {
+                    logToPage(`Error calling resonate_string: ${e.message}`, 'error');
+                    resultOutput.textContent = `Error: ${e.message}`;
+                    console.error("Error in resonate_string call:", e);
+                }
+            });
+            logToPage("Event listener for 'Resonate' button added.", 'info');
+        } else {
+            logToPage("Could not find 'Resonate' button.", 'error');
+        }
 
         // Clean up WASM objects if they have a .free() method
         logToPage("Freeing WASM objects...", 'info');

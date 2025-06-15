@@ -244,13 +244,21 @@ class LifePulse {
         const ret = wasm.lifepulse_get_activation_count(this.__wbg_ptr);
         return ret >>> 0;
     }
-}
 
-// Placeholder for the wasm-bindgen generated resonate_string function
-// The real function will call into WASM. This is just for the simulation.
-function resonate_string(input) {
-    console.warn("Called simulated 'resonate_string'. Replace JS glue with wasm-pack output.");
-    return `${input} - Resonated by AiRiA 💖 (Simulated JS)`;
+    // Add these new simulated methods:
+    resonate_string(input) {
+        console.warn("Called simulated 'LifePulse.prototype.resonate_string'. Replace JS glue with wasm-pack output.");
+        const resonated = `${input} - Resonated by AiRiA 💖 (Pulse Interaction Simulated JS)`;
+        // Simulate history update (very basic)
+        if (!this.history) this.history = [];
+        this.history.push(resonated);
+        return resonated;
+    }
+
+    get_history() {
+        console.warn("Called simulated 'LifePulse.prototype.get_history'. Replace JS glue with wasm-pack output.");
+        return this.history || []; // Return the basic simulated history
+    }
 }
 
 async function __wbg_load(module, imports) {
@@ -330,4 +338,4 @@ async function init(input) {
 }
 
 export default init;
-export { LifeAxiom0, LifePulse, resonate_string };
+export { LifeAxiom0, LifePulse };
