@@ -28,7 +28,7 @@
           packages = [
             # Rust toolchain from rust-overlay, configured with wasm32-wasi target
             (pkgs.rust-bin.stable."1.76.0".default.override { # Check rust-overlay for latest stable version
-              targets = ["wasm32-wasi"];
+              targets = ["wasm32-wasi", "wasm32-unknown-unknown"];
               extensions = ["rust-src"]; # For rust-analyzer
             })
 
