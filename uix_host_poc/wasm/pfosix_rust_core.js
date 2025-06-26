@@ -1,5 +1,23 @@
 let wasm;
 
+const LifeAxiom = {
+    Root: 0,
+    Streme: 1,
+    Spark: 2,
+    Wheelz: 3,
+    Port: 4,
+    Beam: 5,
+    Zen: 6,
+    // Reverse mapping for debugging or potential use
+    0: "Root",
+    1: "Streme",
+    2: "Spark",
+    3: "Wheelz",
+    4: "Port",
+    5: "Beam",
+    6: "Zen",
+};
+
 const heap = new Array(128).fill(undefined);
 
 heap.push(undefined, null, true, false);
@@ -246,10 +264,23 @@ class LifePulse {
     }
 
     // Add these new simulated methods:
-    resonate_string(input) {
-        console.warn("Called simulated 'LifePulse.prototype.resonate_string'. Replace JS glue with wasm-pack output.");
-        const resonated = `${input} - Resonated by AiRiA 💖 (Pulse Interaction Simulated JS)`;
-        // Simulate history update (very basic)
+    resonate_string(axiom, input) { // New signature with axiom
+        console.warn("Called simulated 'LifePulse.prototype.resonate_string' with Axiom. Replace JS glue with wasm-pack output.");
+
+        let axiom_prefix = "";
+        // Simulate the prefix based on the axiom value (0-6)
+        switch (axiom) {
+            case LifeAxiom.Root:   axiom_prefix = "[ROOT]"; break;
+            case LifeAxiom.Streme: axiom_prefix = "[STREME]"; break;
+            case LifeAxiom.Spark:  axiom_prefix = "[SPARK]"; break;
+            case LifeAxiom.Wheelz: axiom_prefix = "[WHEELZ]"; break;
+            case LifeAxiom.Port:   axiom_prefix = "[PORT]"; break;
+            case LifeAxiom.Beam:   axiom_prefix = "[BEAM]"; break;
+            case LifeAxiom.Zen:    axiom_prefix = "[ZEN]"; break;
+            default: axiom_prefix = "[UNKNOWN_AXIOM]";
+        }
+
+        const resonated = `${axiom_prefix} Resonating: ${input} - Resonated by AiRiA 💖 (Pulse Interaction Simulated JS)`;
         if (!this.history) this.history = [];
         this.history.push(resonated);
         return resonated;
@@ -338,4 +369,4 @@ async function init(input) {
 }
 
 export default init;
-export { LifeAxiom0, LifePulse };
+export { LifeAxiom0, LifePulse, LifeAxiom };

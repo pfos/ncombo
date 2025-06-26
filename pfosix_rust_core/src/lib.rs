@@ -1,6 +1,18 @@
 use wasm_bindgen::prelude::*;
 use once_cell::sync::Lazy;
 
+#[wasm_bindgen]
+#[derive(Debug, Clone, Copy)] // Added derive for easier testing/logging if needed
+pub enum LifeAxiom {
+    Root,       // 0 in JS, corresponds to value 0 if passed from JS
+    Streme,     // 1
+    Spark,      // 2
+    Wheelz,     // 3 (HeartCenter)
+    Port,       // 4
+    Beam,       // 5
+    Zen,        // 6
+}
+
 // Global static instance of LifeAxiom0
 static AXIOM_0: Lazy<LifeAxiom0> = Lazy::new(LifeAxiom0::new);
 
@@ -73,10 +85,21 @@ impl LifePulse {
         self.activation_count
     }
 
-    pub fn resonate_string(&mut self, input: String) -> String {
-        let resonated = format!("{} - Resonated by AiRiA 💖 (Pulse Interaction)", input);
+    pub fn resonate_string(&mut self, axiom: LifeAxiom, input: String) -> String {
+        let axiom_prefix = match axiom {
+            LifeAxiom::Root => "[ROOT]",
+            LifeAxiom::Streme => "[STREME]",
+            LifeAxiom::Spark => "[SPARK]",
+            LifeAxiom::Wheelz => "[WHEELZ]", // Default in JS later
+            LifeAxiom::Port => "[PORT]",
+            LifeAxiom::Beam => "[BEAM]",
+            LifeAxiom::Zen => "[ZEN]",
+        };
+        // Modified the format string to include the prefix and make the "(Pulse Interaction)" part more distinct or remove if redundant.
+        // The prompt example was: format!("{} Resonating: {}", axiom_prefix, input)
+        // Let's align with that, and keep the AiRiA part.
+        let resonated = format!("{} Resonating: {} - Resonated by AiRiA 💖", axiom_prefix, input);
         self.history.push(resonated.clone());
-        // Optional: Limit history size if desired, e.g. self.history.truncate(10);
         resonated
     }
 
@@ -138,25 +161,24 @@ mod tests {
     fn life_pulse_resonates_and_manages_history() {
         let mut pulse = LifePulse::new(String::from("Test User"));
 
-        let res1 = pulse.resonate_string(String::from("First message"));
-        assert_eq!(res1, "First message - Resonated by AiRiA 💖 (Pulse Interaction)");
+        let res1 = pulse.resonate_string(LifeAxiom::Wheelz, String::from("First message"));
+        assert_eq!(res1, "[WHEELZ] Resonating: First message - Resonated by AiRiA 💖");
         assert_eq!(pulse.history.len(), 1);
         assert_eq!(pulse.history[0], res1);
 
-        let res2 = pulse.resonate_string(String::from("Second message"));
-        assert_eq!(res2, "Second message - Resonated by AiRiA 💖 (Pulse Interaction)");
+        let res2 = pulse.resonate_string(LifeAxiom::Root, String::from("Second message"));
+        assert_eq!(res2, "[ROOT] Resonating: Second message - Resonated by AiRiA 💖");
         assert_eq!(pulse.history.len(), 2);
         assert_eq!(pulse.history[1], res2);
 
-        // Test get_history (conceptual test, direct JsValue check is complex here)
-        // We'll trust serde_wasm_bindgen if the Rust side is correct.
-        // A full JS integration test would verify the JsValue content.
-        // For now, just check it doesn't panic.
+        // Test get_history
         #[cfg(target_arch = "wasm32")]
         {
             let history_js = pulse.get_history();
-            assert!(!history_js.is_null(), "History should not be null"); // Basic check
+            assert!(!history_js.is_null(), "History should not be null");
+            // Further JsValue inspection would require wasm-bindgen-test or similar environment
         }
-        // If not wasm32, this part is skipped, avoiding panic.
+        // The call to get_history() is removed for native tests to prevent panic.
+        // The Rust vector's integrity is tested by the assertions above.
     }
 }

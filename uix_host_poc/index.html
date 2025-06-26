@@ -24,6 +24,21 @@
             border-bottom: none;
         }
         .label { font-weight: bold; color: #555; }
+        #lifewheel-controls { margin-bottom: 20px; text-align: center; } /* Added margin and center align */
+        #lifewheel-controls button {
+            margin: 3px;
+            padding: 10px 15px; /* Adjusted padding */
+            cursor: pointer;
+            border: 2px solid #ccc; /* Style adjustment */
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            font-size: 1em; /* Added font size */
+        }
+        #lifewheel-controls button.selected {
+            border-color: #007bff;
+            background-color: #cce5ff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.5); /* Added shadow for selected */
+        }
     </style>
 </head>
 <body>
@@ -31,15 +46,25 @@
     <p>This page attempts to load and interact with the <code>pfosix_rust_core.wasm</code> module.</p>
     <p>Check the browser's developer console (usually F12) for detailed logs.</p>
 
+    <div id="lifewheel-controls">
+      <button id="lifewheel-root" data-axiom="Root">🛡️ Root</button>
+      <button id="lifewheel-streme" data-axiom="Streme">🎨 Streme</button>
+      <button id="lifewheel-spark" data-axiom="Spark">🚀 Spark</button>
+      <button id="lifewheel-wheelz" data-axiom="Wheelz" class="selected">💚 Wheelz</button> <!-- Wheelz selected by default -->
+      <button id="lifewheel-port" data-axiom="Port">🔵 Port</button>
+      <button id="lifewheel-beam" data-axiom="Beam">🔮 Beam</button>
+      <button id="lifewheel-zen" data-axiom="Zen">👑 Zen</button>
+    </div>
+
     <h2>Interactive Resonance Chamber</h2>
     <div>
-        <input type="text" id="userInput" placeholder="Enter text to resonate..." size="50">
-        <button id="resonateButton">Resonate ✨</button>
+        <input type="text" id="resonate-input" placeholder="Enter text to resonate..." size="50">
+        <button id="resonate-button">Resonate ✨</button>
     </div>
     <h3>Resonated Output:</h3>
-    <div id="resultOutput" style="margin-top: 10px; padding: 10px; border: 1px solid #888; background-color: #e9e9e9; min-height: 20px; border-radius: 4px;"></div>
+    <div id="output" style="margin-top: 10px; padding: 10px; border: 1px solid #888; background-color: #e9e9e9; min-height: 20px; border-radius: 4px;"></div>
 
-    <div id="output">Loading WASM module and interacting...</div>
+    <div id="logContainer">Loading WASM module and interacting...</div>
 
     <script type="module" src="index.js"></script>
 </body>

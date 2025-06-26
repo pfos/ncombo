@@ -1,24 +1,27 @@
 // Import the initializer and the classes from the WASM module's JS glue
-import init, { LifeAxiom0, LifePulse } from './wasm/pfosix_rust_core.js';
+import init, { LifeAxiom0, LifePulse, LifeAxiom } from './wasm/pfosix_rust_core.js';
+
+let selectedAxiom = LifeAxiom.Wheelz; // Default to HeartCenter (Wheelz is 3)
 
 async function main() {
-    const outputDiv = document.getElementById('output');
+    const logOutputDiv = document.getElementById('logContainer'); // Changed ID for general logs
 
     function logToPage(message, type = 'info') {
         console.log(`[${type.toUpperCase()}] ${message}`);
-        const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        entry.innerHTML = `<span class="label">[${type.toUpperCase()}]</span> ${message.replace(/\n/g, "<br>")}`;
-        outputDiv.appendChild(entry);
+        if (logOutputDiv) { // Check if logOutputDiv exists
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="label">[${type.toUpperCase()}]</span> ${message.replace(/\n/g, "<br>")}`;
+            logOutputDiv.appendChild(entry);
+        }
     }
 
     // Clear initial "Loading..." message
-    outputDiv.innerHTML = '';
+    if (logOutputDiv) logOutputDiv.innerHTML = '';
     logToPage("Attempting to initialize WASM module...", 'status');
 
     try {
         // Initialize the WASM module.
-        // The path is relative to this JS file, pointing to where the .wasm file will be.
         await init();
         logToPage("WASM module initialized successfully.", 'success');
 
@@ -29,7 +32,7 @@ async function main() {
 
         // Interact with LifePulse
         logToPage("Instantiating LifePulse with 'Initial User Data from JS'...", 'info');
-        const pulse = new LifePulse("Initial User Data from JS");
+        const pulse = new LifePulse("Initial User Data from JS"); // pulse is local to main's try block
 
         logToPage(`LifePulse Axiom Ref: <span style="color: #007bff;">${pulse.axiomDescription}</span>`, 'data');
         logToPage(`LifePulse Initial User Data: <span style="color: #007bff;">${pulse.userData}</span>`, 'data');
@@ -44,45 +47,76 @@ async function main() {
         pulse.userData = "Updated User Data from JS";
         logToPage(`LifePulse New User Data: <span style="color: #007bff;">${pulse.userData}</span>`, 'data');
 
+        // Setup LifeWheelz Axiom Button Controls
+        const controls = document.getElementById('lifewheel-controls');
+        const axiomButtons = controls.querySelectorAll('button');
+
+        logToPage("Setting up LifeWheelz controls...", 'info');
+        if (controls && axiomButtons.length > 0) {
+            controls.addEventListener('click', (event) => {
+                if (event.target.tagName === 'BUTTON') {
+                    const axiomName = event.target.dataset.axiom;
+                    if (LifeAxiom[axiomName] !== undefined) {
+                        selectedAxiom = LifeAxiom[axiomName];
+
+                        axiomButtons.forEach(btn => btn.classList.remove('selected'));
+                        event.target.classList.add('selected');
+
+                        logToPage(`Selected Axiom: ${axiomName} (Value: ${selectedAxiom})`, 'ui');
+                        console.log(`Selected Axiom: ${axiomName}`, selectedAxiom);
+                    }
+                }
+            });
+            // Set initial selected style for default axiom (Wheelz)
+            const defaultAxiomButton = document.getElementById('lifewheel-wheelz');
+            if (defaultAxiomButton) { // Ensure default button exists
+                 // Remove selected from all first, then add to default (in case HTML had multiple)
+                axiomButtons.forEach(btn => btn.classList.remove('selected'));
+                defaultAxiomButton.classList.add('selected');
+            }
+            logToPage(`Default Axiom: Wheelz (Value: ${selectedAxiom})`, 'ui');
+        } else {
+            logToPage("Could not find LifeWheelz controls or buttons.", 'error');
+        }
+
         // Event Listener for interactive resonate_string
-        const userInput = document.getElementById('userInput');
-        const resonateButton = document.getElementById('resonateButton');
-        const resultOutput = document.getElementById('resultOutput');
+        const resonateInput = document.getElementById('resonate-input'); // New ID
+        const resonateButton = document.getElementById('resonate-button'); // New ID
+        const outputDisplay = document.getElementById('output'); // New ID for resonate result
 
-        if (resonateButton) {
+        if (resonateButton && resonateInput && outputDisplay) {
             resonateButton.addEventListener('click', async () => {
-                if (!pulse) { // Ensure pulse (LifePulse instance) is initialized
+                if (!pulse) {
                     logToPage("LifePulse instance not available yet.", 'error');
-                    resultOutput.textContent = "Error: LifePulse not initialized.";
+                    outputDisplay.textContent = "Error: LifePulse not initialized.";
                     return;
                 }
-                const inputValue = userInput.value;
+                const inputValue = resonateInput.value;
                 if (inputValue.trim() === "") {
-                    resultOutput.textContent = "Please enter some text to resonate.";
+                    outputDisplay.textContent = "Please enter some text to resonate.";
                     return;
                 }
 
-                logToPage(`User input: "${inputValue}"`, 'action');
+                logToPage(`User input for resonance: "${inputValue}" with Axiom: ${Object.keys(LifeAxiom)[selectedAxiom]}`, 'action');
                 try {
-                    const resonatedText = pulse.resonate_string(inputValue); // Calling method on the instance
-                    logToPage(`Rust responded: "${resonatedText}"`, 'data');
-                    resultOutput.innerHTML = `<span style="color: #28a745;">${resonatedText}</span>`;
-                    userInput.value = ""; // Clear input field
+                    const resonatedText = pulse.resonate_string(selectedAxiom, inputValue);
+                    logToPage(`Rust resonated: "${resonatedText}"`, 'data');
+                    outputDisplay.innerHTML = `<span style="color: #28a745;">${resonatedText}</span>`;
+                    // resonateInput.value = ""; // Decided to keep input
 
-                    // Bonus: Get and log history
-                    const historyArray = pulse.get_history(); // This will be a JsValue (array)
+                    const historyArray = pulse.get_history();
                     console.log("LifePulse History:", historyArray);
                     logToPage(`Current History (logged to console): ${JSON.stringify(historyArray)}`, 'debug');
 
                 } catch (e) {
-                    logToPage(`Error calling resonate_string: ${e.message}`, 'error');
-                    resultOutput.textContent = `Error: ${e.message}`;
+                    logToPage(`Error calling resonate_string: ${e.message}\n${e.stack}`, 'error');
+                    outputDisplay.textContent = `Error: ${e.message}`;
                     console.error("Error in resonate_string call:", e);
                 }
             });
-            logToPage("Event listener for 'Resonate' button added.", 'info');
+            logToPage("Event listener for 'Resonate' button updated.", 'info');
         } else {
-            logToPage("Could not find 'Resonate' button.", 'error');
+            logToPage("Could not find 'resonate-button', 'resonate-input', or 'output' display.", 'error');
         }
 
         // Clean up WASM objects if they have a .free() method
